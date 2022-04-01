@@ -30,14 +30,93 @@
 - [상속, Inheritance (링크)](https://imprint.tistory.com/7)
 - [캡슐화, Encapsulation (링크)](https://imprint.tistory.com/6)
 
-특히 OCP, DIP, 다형성이 스프링을 탄생시킨 중요한 개념이다.
+이러한 객체 지향 원칙들을 지키면서 개발을 하다보면 원칙을 지키기 위해 해야하는 부수적인 작업들이 너무 많게 된다.
+특히 SRP, OCP, DIP를 지키기 위해서는 결국 스프링의 컨테이너와 같은 DI 컨테이너를 만들게 된다.
+
+결론적으로 **객체 지향 설계를 위해 필요한 부수적인 작업들을 대신 해주는 프레임워크**이다.
+
+아래서는 스프링을 사용하지 않은 순수 자바로 프로젝트를 만들어보고 스프링으로 변화시키는 과정을 진행하면서 스프링이 어떠한 부수적인 작업을 대신 해주는지 확인해본다.
 
 ---
 
-### 순수 자바 프로젝트
+### 회원 관련 코드
 
 스프링없이 순수하게 자바로만 프로젝트를 만들면서 궁극적으로 어떠한 문제를 만나게 되는지 알아본다.
-프로젝트 기획은 필자가 참고한 강의와 동일하게 구성한다.
+프로젝트 기획 및 예제는 필자가 참고한 강의와 동일하게 구성한다. (단, 필자는 Lombok 라이브러리만 추가해서 진행하도록 하겠다.)
+
+**회원 도메인 협력 관계**
+
+![](image/member-cooperation-relation.png)
+
+**회원 클래스 다이어그램**
+
+![](image/class-diagram.png)
+
+**회원 객체 다이어그램**
+
+![](image/instance-diagram.png)
+
+---
+
+본 문서에서는 스프링을 이해하기 위해 필요한 파일만 나열한다.
+모든 파일의 내용이 궁금하면 필자의 [깃허브 페이지(링크)](https://github.com/roy-zz/spring)나 강의를 참고한다.
+
+**회원 서비스 구현 Class**
+
+회원 리포지토리의 구현체인 MemoryMemberRepository에 의존하여 클라이언트의 요청이 들어오면
+리포지토리에서 조회하여 리턴한다.
+
+```java
+public class MemberServiceImpl implements MemberService {
+
+    private final MemberRepository memberRepository = new MemoryMemberRepository();
+
+    @Override
+    public void signup(Member member) {
+        memberRepository.save(member);
+    }
+
+    @Override
+    public Member findMember(Long memberId) {
+        return memberRepository.findById(memberId);
+    }
+}
+```
+
+**회원 클라이언트 테스트 Class**
+
+클라이언트의 역할을 하는 테스트 클래스이다.
+인터페이스의 구현체인 MemberServiceImpl에 의존하여 직접 구현체에게 요청을 하고 있다.
+
+```java
+class MemberServiceImplTest {
+
+    MemberService memberService = new MemberServiceImpl();
+
+    @Test
+    @DisplayName("회원가입 테스트")
+    void signupTest() {
+        // GIVEN
+        Member member = new Member(0L, "Roy", VIP);
+
+        // WHEN
+        memberService.signup(member);
+        Member storedMember = memberService.findMember(0L);
+
+        // THEN
+        assertEquals(member, storedMember);
+    }
+}
+```
+
+만약 클라이언트가 다른 서비스를 사용해야 한다면?
+만약 서비스가 다른 리포지토리를 사용해야 한다면?
+
+클라이언트 <---> 서비스, 서비스 <---> 리포지토리 가 구현체를 의존하며 강하게 결합되어 있다.
+
+---
+
+### 주문과 할인 도메인
 
 
 
@@ -45,8 +124,7 @@
 
 
 
-
-
+---
 
 **참고한 강의:** https://www.inflearn.com/course/%EC%8A%A4%ED%94%84%EB%A7%81-%ED%95%B5%EC%8B%AC-%EC%9B%90%EB%A6%AC-%EA%B8%B0%EB%B3%B8%ED%8E%B8
 
