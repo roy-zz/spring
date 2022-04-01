@@ -112,17 +112,82 @@ class MemberServiceImplTest {
 만약 클라이언트가 다른 서비스를 사용해야 한다면?
 만약 서비스가 다른 리포지토리를 사용해야 한다면?
 
-클라이언트 <---> 서비스, 서비스 <---> 리포지토리 가 구현체를 의존하며 강하게 결합되어 있다.
+클라이언트 <---> 서비스, 서비스 <---> 리포지토리가 구현체를 의존하며 강하게 결합되어 있다.
 
 ---
 
 ### 주문과 할인 도메인
 
+주문과 멤버의 관계를 알아보도록 한다.
 
+**주문 도메인의 협력 관계 및 역할 및 책임**
 
+![](image/order-cooperation-relation.png)
 
+**주문 도메인**
 
+![](image/order-domain.png)
 
+**회원 클래스 다이어그램**
+
+![](image/member-class-diagram.png)
+
+이렇게 역할과 책임을 구분하는 경우 리포지토리가 Memory 리포지토리에서 RDB 리포지토리로 변경하여도 협력 관계 변경없이 사용가능하다.
+또한 정액 할인 정책에서 정률 할인 정책으로 바뀌더라도 협력 관계를 그대로 사용할 수 있다.
+
+**주문 서비스 구현 Class**
+
+```java
+public class OrderServiceImpl implements OrderService {
+
+    private final DiscountPolicy discountPolicy = new FixedDiscountPolicy();
+    private final MemberRepository memberRepository = new MemoryMemberRepository();
+
+    @Override
+    public Order createOrder(Long memberId, String itemName, int itemPrice) {
+        Member storedMember = memberRepository.findById(memberId);
+        int discountPrice = discountPolicy.discount(storedMember, itemPrice);
+        return new Order(memberId, itemName, itemPrice, discountPrice);
+    }
+}
+```
+
+**주문 클라이언트 테스트 Class**
+
+```java
+class OrderServiceImplTest {
+
+    private final MemberService memberService = new MemberServiceImpl();
+    private final OrderService orderService = new OrderServiceImpl();
+
+    @Test
+    @DisplayName("주문 생성 테스트")
+    void createOrderTest() {
+        // GIVEN
+        long memberId = 0L;
+        Member newMember = new Member(memberId, "Roy", VIP);
+        memberService.signup(newMember);
+
+        // WHEN
+        Order order = orderService.createOrder(memberId, "MacbookPro", 10000);
+
+        // THEN
+        assertEquals(1000, order.getDiscountPrice());
+    }
+}
+```
+
+만약 클라이언트가 다른 서비스를 사용해야 한다면?
+만약 서비스가 다른 리포지토리를 사용해야 한다면?
+
+클라이언트 <---> 서비스, 서비스 <---> 리포지토리가 구현체를 의존하며 강하게 결합되어 있다.
+
+---
+
+지금까지 스프링은 무엇인지 알아보고 어떠한 이유로 스프링이 탄생하였는지 알아보기 위하여 순수 자바만으로 어플리케이션을 개발해보았다.
+이러한 과정에서 SOLID와 OOP를 위반하는 객체들 간의 강하게 결합이 발생하게 되었다.
+
+다음 장에서는 객체들 간의 강한 결합도를 순수 자바 객체로 DI를 하면서 결합도를 낮춰보면서 "왜 스프링을 사용해야하는가"에 대해서 알아본다.
 
 ---
 
