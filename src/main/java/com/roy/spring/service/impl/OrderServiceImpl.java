@@ -9,7 +9,8 @@ import com.roy.spring.service.OrderService;
 
 public class OrderServiceImpl implements OrderService {
 
-    private final DiscountPolicy discountPolicy = new FixedDiscountPolicy();
+    // private final DiscountPolicy discountPolicy = new FixedDiscountPolicy();
+    private final DiscountPolicy discountPolicy = new RatioDiscountPolicy();
     private final MemberRepository memberRepository = new MemoryMemberRepository();
 
     @Override

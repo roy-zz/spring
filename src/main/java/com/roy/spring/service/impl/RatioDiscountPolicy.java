@@ -5,13 +5,13 @@ import com.roy.spring.service.DiscountPolicy;
 
 import static com.roy.spring.enums.Grade.VIP;
 
-public class FixedDiscountPolicy implements DiscountPolicy {
+public class RatioDiscountPolicy implements DiscountPolicy {
 
-    private static int DISCOUNT_FIX_AMOUNT = 1000;
+    private static final int DISCOUNT_RATIO = 10;
 
     @Override
     public int discount(Member member, int price) {
-        return member.getGrade() == VIP ? DISCOUNT_FIX_AMOUNT : 0;
+        return member.getGrade() == VIP ? price * DISCOUNT_RATIO / 100 : 0;
     }
 
 }
