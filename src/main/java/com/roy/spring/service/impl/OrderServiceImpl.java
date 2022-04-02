@@ -3,15 +3,18 @@ package com.roy.spring.service.impl;
 import com.roy.spring.domain.Member;
 import com.roy.spring.domain.Order;
 import com.roy.spring.repository.MemberRepository;
-import com.roy.spring.repository.impl.MemoryMemberRepository;
 import com.roy.spring.service.DiscountPolicy;
 import com.roy.spring.service.OrderService;
 
 public class OrderServiceImpl implements OrderService {
 
-    // private final DiscountPolicy discountPolicy = new FixedDiscountPolicy();
-    private final DiscountPolicy discountPolicy = new RatioDiscountPolicy();
-    private final MemberRepository memberRepository = new MemoryMemberRepository();
+    private final DiscountPolicy discountPolicy;
+    private final MemberRepository memberRepository;
+
+    public OrderServiceImpl(DiscountPolicy discountPolicy, MemberRepository memberRepository) {
+        this.discountPolicy = discountPolicy;
+        this.memberRepository = memberRepository;
+    }
 
     @Override
     public Order createOrder(Long memberId, String itemName, int itemPrice) {

@@ -66,7 +66,149 @@ public class OrderServiceImpl implements OrderService {
 
 ---
 
+### AppConfig
 
+새로운 클래스인 AppConfig를 생성하였다.
+
+```java
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class AppConfig {
+
+    public static final AppConfig APP_CONFIG = new AppConfig();
+
+    public MemberService memberService() {
+        return new MemberServiceImpl(memberRepository());
+    }
+
+    public OrderService orderService() {
+        return new OrderServiceImpl(discountPolicy(), memberRepository());
+    }
+
+    private MemberRepository memberRepository() {
+        return new MemoryMemberRepository();
+    }
+
+    private DiscountPolicy discountPolicy() {
+        return new FixedDiscountPolicy();
+    }
+}
+```
+
+memoryRepository()의 반환 타입은 인터페이스인 MemberRepository이다.
+실제로 반환되는 객체는 인터페이스의 구현체인 MemoryMemberRepository()이다.
+
+discountPolicy()의 반환 타입 또한 인터페이스인 DiscountPolicy이다.
+실제로 반환되는 객체는 인터페이스의 구현체인 FixedDiscountPolicy()이다.
+
+이제 SRP, OCP, DIP를 지키지 않았던 클라이언트의 코드를 살펴본다.
+
+```java
+class MemberServiceImplTest {
+
+    private final MemberService memberService = AppConfig.APP_CONFIG.memberService();
+    // 이하 생략
+}
+```
+
+회원가입을 요청하는 클라이언트 역할의 테스트 코드다.
+코드 어디에도 실제 구현체인 MemoryServiceImpl을 찾아볼 수 없다.
+
+---
+
+```java
+class OrderServiceImplTest {
+
+    private final MemberService memberService = AppConfig.APP_CONFIG.memberService();
+    private final OrderService orderService = AppConfig.APP_CONFIG.orderService();
+    // 이하 생략
+}
+```
+
+주문을 요청하는 클라이언트 역시 실제 구현체인 MemberServiceImpl과 OrderServiceImpl을 찾아볼 수 없다.
+
+---
+
+클라이언트 코드와 같이 문제가 되었던 서비스의 코드를 살펴본다.
+
+```java
+public class MemberServiceImpl implements MemberService {
+
+    private final MemberRepository memberRepository;
+
+    public MemberServiceImpl(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
+    // 이하 생략
+}
+```
+
+서비스 또한 인터페이스인 MemberRepository에만 의존을 하고 있다.
+어디에도 구현체인 MemoryMemberRepository를 찾아볼 수 없다.
+
+---
+
+```java
+public class OrderServiceImpl implements OrderService {
+
+    private final DiscountPolicy discountPolicy;
+    private final MemberRepository memberRepository;
+
+    public OrderServiceImpl(DiscountPolicy discountPolicy, MemberRepository memberRepository) {
+        this.discountPolicy = discountPolicy;
+        this.memberRepository = memberRepository;
+    }
+    // 이하 생략
+}
+```
+
+주문 서비스 또한 인터페이스인 DiscountPolicy와 MemberRepository에만 의존을 하고 있다.
+AppConfig의 등장만으로 AppConfig를 제외한 모든 클래스들이 인터페이스에만 의존하도록 변경된 것이다.
+
+갑자기 할인 정책을 정액 할인정책(FixedDiscountPolicy)에서 정률 할인정책(RatioDiscountPolicy)로 변경하고
+데이터베이스를 메모리DB(MemoryMemberRepository)에서 RDB(RDBMemberRepository)로 변경하라는 요청이 들어왔다.
+우리는 이제 AppConfig만 아래와 같이 수정하면 빠르게 회사의 요청 사항대로 수정을 할 수 있다.
+
+```java
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public class AppConfig {
+
+    public static final AppConfig APP_CONFIG = new AppConfig();
+
+    public MemberService memberService() {
+        return new MemberServiceImpl(memberRepository());
+    }
+
+    public OrderService orderService() {
+        return new OrderServiceImpl(discountPolicy(), memberRepository());
+    }
+
+    private MemberRepository memberRepository() {
+        // return new MemoryMemberRepository();
+        return new RDBMemberRepository();
+    }
+
+    private DiscountPolicy discountPolicy() {
+        // return new FixedDiscountPolicy();
+        return new RatioDiscountPolicy();
+    }
+}
+```
+
+데이터베이스의 종류가 변경되고 할인 정책이 변경되었지만 구현체들의 코드는 전혀 변경이 없고 AppConfig의 코드 중 단 두줄만 변경되었다.
+
+기존에는 자신이 사용하는 구현체를 직접 선택하는 아래의 이미지와 같은 구조였다.
+
+![](image/choose-by-impl.png)
+
+하지만 AppConfig의 등장으로 주입받은 구현체를 사용하기만 하면 되는 구조로 변경되었다.
+
+![](image/choose-by-appconfig.png)
+
+---
+
+### AppConfig에 Spring 적용
+
+이번에는 순수 자바로 구성된 프로젝트에 Spring의 DI 컨테이너를 적용시켜본다.
 
 
 

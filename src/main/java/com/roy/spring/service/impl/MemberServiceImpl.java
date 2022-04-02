@@ -2,12 +2,15 @@ package com.roy.spring.service.impl;
 
 import com.roy.spring.domain.Member;
 import com.roy.spring.repository.MemberRepository;
-import com.roy.spring.repository.impl.MemoryMemberRepository;
 import com.roy.spring.service.MemberService;
 
 public class MemberServiceImpl implements MemberService {
 
-    private final MemberRepository memberRepository = new MemoryMemberRepository();
+    private final MemberRepository memberRepository;
+
+    public MemberServiceImpl(MemberRepository memberRepository) {
+        this.memberRepository = memberRepository;
+    }
 
     @Override
     public void signup(Member member) {

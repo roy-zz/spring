@@ -1,5 +1,6 @@
 package com.roy.spring.service.impl;
 
+import com.roy.spring.configuration.AppConfig;
 import com.roy.spring.domain.Member;
 import com.roy.spring.domain.Order;
 import com.roy.spring.service.MemberService;
@@ -12,8 +13,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class OrderServiceImplTest {
 
-    private final MemberService memberService = new MemberServiceImpl();
-    private final OrderService orderService = new OrderServiceImpl();
+    private final MemberService memberService = AppConfig.APP_CONFIG.memberService();
+    private final OrderService orderService = AppConfig.APP_CONFIG.orderService();
 
     @Test
     @DisplayName("주문 생성 테스트")
