@@ -5,13 +5,19 @@ import com.roy.spring.domain.Member;
 import com.roy.spring.service.MemberService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import static com.roy.spring.enums.Grade.VIP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class MemberServiceImplTest {
 
-    private final MemberService memberService = AppConfig.APP_CONFIG.memberService();
+    private final ApplicationContext applicationContext
+            = new AnnotationConfigApplicationContext(AppConfig.class);
+
+    private final MemberService memberService
+            = applicationContext.getBean("memberService", MemberService.class);
 
     @Test
     @DisplayName("회원가입 테스트")

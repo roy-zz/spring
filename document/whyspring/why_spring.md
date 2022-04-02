@@ -210,9 +210,70 @@ public class AppConfig {
 
 이번에는 순수 자바로 구성된 프로젝트에 Spring의 DI 컨테이너를 적용시켜본다.
 
+수정된 AppConfig에는 @Configuration 어노테이션을 사용하였다.
+각 메서드에 @Bean 어노테이션을 달아서 DI 컨테이너에 의해 관리되도록 구성하였다.
 
+```java
+@Configuration
+public class AppConfig {
 
+    @Bean
+    protected MemberService memberService() {
+        return new MemberServiceImpl(memberRepository());
+    }
 
+    @Bean
+    protected OrderService orderService() {
+        return new OrderServiceImpl(discountPolicy(), memberRepository());
+    }
+
+    @Bean
+    protected MemberRepository memberRepository() {
+        return new MemoryMemberRepository();
+    }
+
+    @Bean
+    protected DiscountPolicy discountPolicy() {
+        return new FixedDiscountPolicy();
+    }
+}
+```
+
+클라이언트의 코드는 아래와 같이 수정되었다.
+
+```java
+class OrderServiceImplTest {
+
+    private final ApplicationContext applicationContext
+            = new AnnotationConfigApplicationContext(AppConfig.class);
+
+    private final MemberService memberService
+            = applicationContext.getBean("memberService", MemberService.class);
+
+    private final OrderService orderService
+            = applicationContext.getBean("orderService", OrderService.class);
+    // 이하 생략
+}
+```
+
+```java
+class MemberServiceImplTest {
+
+    private final ApplicationContext applicationContext
+            = new AnnotationConfigApplicationContext(AppConfig.class);
+
+    private final MemberService memberService
+            = applicationContext.getBean("memberService", MemberService.class);
+    // 이하 생략
+}
+```
+
+ApplicationContext를 통해 Bean을 가져와서 사용하도록 수정되었다.
+
+---
+
+지금까지 "스프링이란 무엇인가"와 "왜 스프링을 사용하는가"에 대해서 알아보았다.
+다음 장부터는 스프링의 기능들을 하나씩 살펴보도록 한다.
 
 ---
 

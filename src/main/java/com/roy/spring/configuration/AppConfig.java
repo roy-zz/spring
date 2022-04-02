@@ -1,37 +1,37 @@
 package com.roy.spring.configuration;
 
 import com.roy.spring.repository.MemberRepository;
-import com.roy.spring.repository.impl.RDBMemberRepository;
+import com.roy.spring.repository.impl.MemoryMemberRepository;
 import com.roy.spring.service.DiscountPolicy;
 import com.roy.spring.service.MemberService;
 import com.roy.spring.service.OrderService;
+import com.roy.spring.service.impl.FixedDiscountPolicy;
 import com.roy.spring.service.impl.MemberServiceImpl;
 import com.roy.spring.service.impl.OrderServiceImpl;
-import com.roy.spring.service.impl.RatioDiscountPolicy;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Configuration
 public class AppConfig {
 
-    public static final AppConfig APP_CONFIG = new AppConfig();
-
-    public MemberService memberService() {
+    @Bean
+    protected MemberService memberService() {
         return new MemberServiceImpl(memberRepository());
     }
 
-    public OrderService orderService() {
+    @Bean
+    protected OrderService orderService() {
         return new OrderServiceImpl(discountPolicy(), memberRepository());
     }
 
-    private MemberRepository memberRepository() {
-        // return new MemoryMemberRepository();
-        return new RDBMemberRepository();
+    @Bean
+    protected MemberRepository memberRepository() {
+        return new MemoryMemberRepository();
     }
 
-    private DiscountPolicy discountPolicy() {
-        // return new FixedDiscountPolicy();
-        return new RatioDiscountPolicy();
+    @Bean
+    protected DiscountPolicy discountPolicy() {
+        return new FixedDiscountPolicy();
     }
 
 }

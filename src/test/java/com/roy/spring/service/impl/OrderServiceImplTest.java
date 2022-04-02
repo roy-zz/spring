@@ -7,14 +7,22 @@ import com.roy.spring.service.MemberService;
 import com.roy.spring.service.OrderService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import static com.roy.spring.enums.Grade.VIP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class OrderServiceImplTest {
 
-    private final MemberService memberService = AppConfig.APP_CONFIG.memberService();
-    private final OrderService orderService = AppConfig.APP_CONFIG.orderService();
+    private final ApplicationContext applicationContext
+            = new AnnotationConfigApplicationContext(AppConfig.class);
+
+    private final MemberService memberService
+            = applicationContext.getBean("memberService", MemberService.class);
+
+    private final OrderService orderService
+            = applicationContext.getBean("orderService", OrderService.class);
 
     @Test
     @DisplayName("주문 생성 테스트")
