@@ -68,6 +68,8 @@ ApplicationConfig 클래스를 토대로 생성된 스프링 컨테이너 테이
 
 ---
 
+### 빈 조회
+
 #### 컨테이너에 등록된 모든 빈 출력
 
 ```java
@@ -102,7 +104,9 @@ name: discountPolicy, object: com.roy.spring.service.impl.FixedDiscountPolicy@48
 
 org.springframework로 시작하는 빈들은 스프링에서 사용하는 빈이며 아래쪽의 빈들은 애플리케이션을 위한 빈들이다.
 
-#### 애플리케이션 빈 출력
+---
+
+### 애플리케이션 빈 출력
 
 내가 개발하고 있는 애플리케이션에 관련된 빈만 출력하고 싶다면 아래와 같이 하면 된다.
 ApplicationContext를 생성할 때 꼭 구현체인 AnnotationConfigApplicationContext를 사용해야한다.
@@ -142,13 +146,312 @@ name: discountPolicy, object: com.roy.spring.service.impl.FixedDiscountPolicy@3f
 
 ---
 
+#### 빈 이름으로 타입으로 조회
 
+같은 타입의 다른 이름을 가진 여러 빈이 있을 때 사용한다.
+빈의 이름과 타입으로 조회하는 방법이며 만약 존재하지 않는 빈을 찾으려고 한다면 NoSuchBeanDefinitionException이 발생한다.
 
+```java
+public class ApplicationContextInfoTest {
+    AnnotationConfigApplicationContext ac = new AnnotationConfigApplicationContext(ApplicationConfig.class);
+    @Test
+    @DisplayName("빈 이름으로 조회")
+    void findBeanByName() {
+        MemberService memberService = ac.getBean("memberService", MemberService.class);
+        assertTrue(memberService instanceof MemberServiceImpl);
 
+        assertThrows(NoSuchBeanDefinitionException.class, () -> {
+           ac.getBean("AnonymousBean");
+        });
+    }
+}
+```
 
+---
 
+#### 타입으로 조회
 
+```java
+public class ApplicationContextInfoTest {
+    AnnotationConfigApplicationContext ac = new AnnotationConfigApplicationContext(ApplicationConfig.class);
+    @Test
+    @DisplayName("타입으로 조회")
+    void findByType() {
+        MemberService memberService = ac.getBean(MemberService.class);
+        assertTrue(memberService instanceof MemberServiceImpl);
+    }
+}
+```
 
+---
+
+#### 구체타입으로 조회
+
+```java
+public class ApplicationContextInfoTest {
+    AnnotationConfigApplicationContext ac = new AnnotationConfigApplicationContext(ApplicationConfig.class);
+    @Test
+    @DisplayName("구체 타입으로 조회")
+    void findBySpecificType() {
+        MemberService memberService = ac.getBean("memberService", MemberServiceImpl.class);
+        assertTrue(memberService instanceof MemberServiceImpl);
+    }
+}
+```
+
+---
+
+### 동일한 타입의 빈이 여러 개인 상황에서의 조회
+
+동일한 타입의 빈이 등록되도록 만들기위해 아래와 같은 Configuration 클래스를 생성하였다.
+
+```java
+@Configuration
+public class TestConfig {
+    @Bean
+    public MemberRepository redisMemberRepository() {
+        return new MemoryMemberRepository();
+    }
+    @Bean
+    public MemberRepository memcachedMemberRepository() {
+        return new MemoryMemberRepository();
+    }
+}
+```
+
+---
+
+#### NoUniqueBeanDefinitionException
+
+동일한 타입의 빈이 여러개 있으면 중복 예외가 발생한다.
+
+```java
+public class ApplicationContextInfoTest {
+    private final AnnotationConfigApplicationContext hasDuplicatedTypeBeansAc
+            = new AnnotationConfigApplicationContext(TestConfig.class);
+
+    @Test
+    @DisplayName("동일 타입 조회 NoUniqueBeanDefinitionException 발생 테스트")
+    void findDuplicatedTypeBeanTest() {
+        assertThrows(NoUniqueBeanDefinitionException.class, () -> {
+            hasDuplicatedTypeBeansAc.getBean(MemberRepository.class);
+        });
+    }
+    
+}
+```
+
+---
+
+#### 이름 지정하여 조회
+
+동일한 타입의 빈이 여러개 있어서 중복 오류가 발생한다면 빈의 이름까지 지정하여 조회하면 예외가 발생하지 않는다.
+
+```java
+public class ApplicationContextInfoTest {
+    private final AnnotationConfigApplicationContext hasDuplicatedTypeBeansAc
+            = new AnnotationConfigApplicationContext(TestConfig.class);
+    @Test
+    @DisplayName("동일 타입 조회 빈 이름 지정 테스트")
+    void findDuplicatedTypeBeanByNameTest() {
+        MemberRepository memberRepository
+                = hasDuplicatedTypeBeansAc.getBean("redisMemberRepository", MemberRepository.class);
+        assertTrue(memberRepository instanceof MemoryMemberRepository);
+    }
+}
+```
+
+---
+
+#### 특정 타입을 모두 조회
+
+getBeansOfType을 사용하여 특정 타입의 모든 빈을 맵으로 리턴받을 수 있다.
+
+```java
+public class ApplicationContextInfoTest {
+    private final AnnotationConfigApplicationContext hasDuplicatedTypeBeansAc
+            = new AnnotationConfigApplicationContext(TestConfig.class);
+    @Test
+    @DisplayName("특정 타입 모두 조회 테스트")
+    void findAllDuplicatedTypeTest() {
+        Map<String, MemberRepository> mapOfBeans = hasDuplicatedTypeBeansAc.getBeansOfType(MemberRepository.class);
+        for (String key : mapOfBeans.keySet()) {
+            System.out.println("key: " + key + ", value: " + mapOfBeans.get(key));
+        }
+    }
+}
+```
+
+출력 결과는 아래와 같다.
+
+```bash
+key: redisMemberRepository, value: com.roy.spring.repository.impl.MemoryMemberRepository@5553d0f5
+key: memcachedMemberRepository, value: com.roy.spring.repository.impl.MemoryMemberRepository@1af687fe
+```
+
+---
+
+### 상속 관계 조회
+
+부모 타입으로 조회하면 모든 자식 타입도 함께 조회된다.
+모든 객체의 최상단 부모인 Object 타입으로 조회하면 모든 빈을 조회할 수 있다.
+
+상속 관계 조회를 테스트하기 위해 아래와 같이 TestConfig.class 파일을 수정한다.
+
+```java
+@Configuration
+public class TestConfig {
+    @Bean
+    public MemberRepository redisMemberRepository() {
+        return new MemoryMemberRepository();
+    }
+
+    @Bean
+    public MemberRepository memcachedMemberRepository() {
+        return new MemoryMemberRepository();
+    }
+
+    @Bean
+    public DiscountPolicy ratioDiscountPolicy() {
+        return new RatioDiscountPolicy();
+    }
+
+    @Bean
+    public DiscountPolicy fixedDiscountPolicy() {
+        return new FixedDiscountPolicy();
+    }
+}
+```
+
+#### NoUniqueBeanDefinitionException
+
+부모 타입으로 조회하는 경우 자식 타입의 빈이 둘 이상이라면 NoUniqueBeanDefinitionException이 발생한다.
+
+```java
+public class ApplicationContextInfoTest {
+    private final AnnotationConfigApplicationContext hasDuplicatedTypeBeansAc
+            = new AnnotationConfigApplicationContext(TestConfig.class);
+    @Test
+    @DisplayName("동일 부모 조회 NoUniqueBeanDefinitionException 발생 테스트")
+    void findDuplicatedParentTypeBeanTest() {
+        assertThrows(NoUniqueBeanDefinitionException.class, () -> {
+            hasDuplicatedTypeBeansAc.getBean(DiscountPolicy.class);
+        });
+    }
+}
+```
+
+---
+
+#### 이름을 지정하여 조회
+
+부모 타입이 동일한 여러개의 빈이 있는 경우 이름을 지정하면 원하는 빈을 조회할 수 있다.
+
+```java
+public class ApplicationContextInfoTest {
+    private final AnnotationConfigApplicationContext hasDuplicatedTypeBeansAc
+            = new AnnotationConfigApplicationContext(TestConfig.class);
+    @Test
+    @DisplayName("동일 부모 조회 이름 지정 테스트")
+    void findDuplicatedParentTypeBeanByNameTest() {
+        DiscountPolicy ratioDiscountPolicy
+                = hasDuplicatedTypeBeansAc.getBean("ratioDiscountPolicy", DiscountPolicy.class);
+        assertTrue(ratioDiscountPolicy instanceof RatioDiscountPolicy);
+    }
+}
+```
+
+---
+
+#### 특정 자식 타입으로 조회
+
+부모 타입이 동일한 여러개의 빈이 있는 경우 자식 타입을 명확히 지정하면 원하는 빈을 조회할 수 있다.
+만약 자식 타입의 빈도 여러개라면 NoUniqueBeanDefinitionException이 발생한다.
+
+```java
+public class ApplicationContextInfoTest {
+    private final AnnotationConfigApplicationContext hasDuplicatedTypeBeansAc
+            = new AnnotationConfigApplicationContext(TestConfig.class);
+    @Test
+    @DisplayName("동일 부모 조회 타입 지정 테스트")
+    void findDuplicatedParentTypeBeanBySpecificTypeTest() {
+        DiscountPolicy ratioDiscountPolicy
+                = hasDuplicatedTypeBeansAc.getBean(RatioDiscountPolicy.class);
+        assertTrue(ratioDiscountPolicy instanceof RatioDiscountPolicy);
+    }
+}
+```
+
+---
+
+#### 부모 타입으로 모두 조회
+
+getBeansOfType으로 부모 타입을 지정하는 경우 Map형태로 자식 타입의 빈이 모두 조회된다.
+
+```java
+public class ApplicationContextInfoTest {
+    private final AnnotationConfigApplicationContext hasDuplicatedTypeBeansAc
+            = new AnnotationConfigApplicationContext(TestConfig.class);
+    @Test
+    @DisplayName("부모 타입으로 모두 조회 테스트")
+    void findByParentTypeTest() {
+        Map<String, DiscountPolicy> beansOfType = hasDuplicatedTypeBeansAc.getBeansOfType(DiscountPolicy.class);
+        assertEquals(2, beansOfType.size());
+        for (String key : beansOfType.keySet()) {
+            System.out.println("key: " + key + ", value: " + beansOfType.get(key));
+        }
+    }
+}
+```
+
+출력 결과는 아래와 같다.
+
+```bash
+key: ratioDiscountPolicy, value: com.roy.spring.service.impl.RatioDiscountPolicy@5c530d1e
+key: fixedDiscountPolicy, value: com.roy.spring.service.impl.FixedDiscountPolicy@6c25e6c4
+```
+
+---
+
+#### Object 타입으로 모두 조회
+
+Object 타입으로 조회하는 경우 모든 빈이 조회된다.
+
+```java
+public class ApplicationContextInfoTest {
+    private final AnnotationConfigApplicationContext hasDuplicatedTypeBeansAc
+            = new AnnotationConfigApplicationContext(TestConfig.class);
+    @Test
+    @DisplayName("Object 타입으로 모두 조회 테스트")
+    void findByObjectTypeTest() {
+        Map<String, Object> beansOfType = hasDuplicatedTypeBeansAc.getBeansOfType(Object.class);
+        for (String key : beansOfType.keySet()) {
+            System.out.println("key: " + key + ", value: " + beansOfType.get(key));
+        }
+    }
+}
+```
+
+출력 결과는 아래와 같다.
+
+```bash
+key: org.springframework.context.annotation.internalConfigurationAnnotationProcessor, value: org.springframework.context.annotation.ConfigurationClassPostProcessor@47a5b70d
+key: org.springframework.context.annotation.internalAutowiredAnnotationProcessor, value: org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor@424fd310
+key: org.springframework.context.annotation.internalCommonAnnotationProcessor, value: org.springframework.context.annotation.CommonAnnotationBeanPostProcessor@1a45193b
+key: org.springframework.context.event.internalEventListenerProcessor, value: org.springframework.context.event.EventListenerMethodProcessor@38f116f6
+key: org.springframework.context.event.internalEventListenerFactory, value: org.springframework.context.event.DefaultEventListenerFactory@5286c33a
+key: testConfig, value: com.roy.spring.service.impl.config.TestConfig$$EnhancerBySpringCGLIB$$2521e3b8@6e6d5d29
+key: redisMemberRepository, value: com.roy.spring.repository.impl.MemoryMemberRepository@5c530d1e
+key: memcachedMemberRepository, value: com.roy.spring.repository.impl.MemoryMemberRepository@6c25e6c4
+key: ratioDiscountPolicy, value: com.roy.spring.service.impl.RatioDiscountPolicy@85e6769
+key: fixedDiscountPolicy, value: com.roy.spring.service.impl.FixedDiscountPolicy@c5ee75e
+// 중략
+key: applicationStartup, value: org.springframework.core.metrics.DefaultApplicationStartup@4e858e0a
+key: org.springframework.context.annotation.ConfigurationClassPostProcessor.importRegistry, value: []
+key: messageSource, value: Empty MessageSource
+key: applicationEventMulticaster, value: org.springframework.context.event.SimpleApplicationEventMulticaster@435fb7b5
+key: lifecycleProcessor, value: org.springframework.context.support.DefaultLifecycleProcessor@4e70a728
+```
 
 ---
 
