@@ -8,30 +8,36 @@ import com.roy.spring.service.OrderService;
 import com.roy.spring.service.impl.FixedDiscountPolicy;
 import com.roy.spring.service.impl.MemberServiceImpl;
 import com.roy.spring.service.impl.OrderServiceImpl;
+import com.roy.spring.service.impl.StatefulService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ApplicationConfig {
+public class SpringApplicationConfig {
 
     @Bean
-    protected MemberService memberService() {
+    public MemberService memberService() {
         return new MemberServiceImpl(memberRepository());
     }
 
     @Bean
-    protected OrderService orderService() {
+    public OrderService orderService() {
         return new OrderServiceImpl(discountPolicy(), memberRepository());
     }
 
     @Bean
-    protected MemberRepository memberRepository() {
+    public MemberRepository memberRepository() {
         return new MemoryMemberRepository();
     }
 
     @Bean
-    protected DiscountPolicy discountPolicy() {
+    public DiscountPolicy discountPolicy() {
         return new FixedDiscountPolicy();
+    }
+
+    @Bean
+    public StatefulService statefulService() {
+        return new StatefulService();
     }
 
 }

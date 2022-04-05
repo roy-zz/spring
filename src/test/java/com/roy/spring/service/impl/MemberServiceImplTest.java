@@ -1,6 +1,6 @@
 package com.roy.spring.service.impl;
 
-import com.roy.spring.configuration.ApplicationConfig;
+import com.roy.spring.configuration.PureApplicationConfig;
 import com.roy.spring.domain.Member;
 import com.roy.spring.service.MemberService;
 import org.junit.jupiter.api.DisplayName;
@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class MemberServiceImplTest {
 
     private final ApplicationContext applicationContext
-            = new AnnotationConfigApplicationContext(ApplicationConfig.class);
+            = new AnnotationConfigApplicationContext(PureApplicationConfig.class);
 
     private final MemberService memberService
             = applicationContext.getBean("memberService", MemberService.class);

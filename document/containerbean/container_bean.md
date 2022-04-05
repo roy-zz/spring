@@ -95,7 +95,7 @@ name: org.springframework.context.annotation.internalAutowiredAnnotationProcesso
 name: org.springframework.context.annotation.internalCommonAnnotationProcessor, object: org.springframework.context.annotation.CommonAnnotationBeanPostProcessor@78365cfa
 name: org.springframework.context.event.internalEventListenerProcessor, object: org.springframework.context.event.EventListenerMethodProcessor@64a8c844
 name: org.springframework.context.event.internalEventListenerFactory, object: org.springframework.context.event.DefaultEventListenerFactory@3f6db3fb
-name: applicationConfig, object: com.roy.spring.configuration.ApplicationConfig$$EnhancerBySpringCGLIB$$5849a5a3@52de51b6
+name: applicationConfig, object: com.roy.spring.configuration.PureApplicationConfig$$EnhancerBySpringCGLIB$$5849a5a3@52de51b6
 name: memberService, object: com.roy.spring.service.impl.MemberServiceImpl@18c5069b
 name: orderService, object: com.roy.spring.service.impl.OrderServiceImpl@3a0d172f
 name: memberRepository, object: com.roy.spring.repository.impl.MemoryMemberRepository@68ad99fe
@@ -137,7 +137,7 @@ public class ApplicationContextInfoTest {
 출력 결과는 아래와 같이 애플리케이션 관련 빈들만 출력되었다.
 
 ```bash
-name: applicationConfig, object: com.roy.spring.configuration.ApplicationConfig$$EnhancerBySpringCGLIB$$5849a5a3@5c10f1c3
+name: applicationConfig, object: com.roy.spring.configuration.PureApplicationConfig$$EnhancerBySpringCGLIB$$5849a5a3@5c10f1c3
 name: memberService, object: com.roy.spring.service.impl.MemberServiceImpl@7ac2e39b
 name: orderService, object: com.roy.spring.service.impl.OrderServiceImpl@78365cfa
 name: memberRepository, object: com.roy.spring.repository.impl.MemoryMemberRepository@64a8c844

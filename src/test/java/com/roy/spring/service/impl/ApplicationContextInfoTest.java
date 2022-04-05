@@ -1,6 +1,6 @@
 package com.roy.spring.service.impl;
 
-import com.roy.spring.configuration.ApplicationConfig;
+import com.roy.spring.configuration.PureApplicationConfig;
 import com.roy.spring.repository.MemberRepository;
 import com.roy.spring.repository.impl.MemoryMemberRepository;
 import com.roy.spring.service.DiscountPolicy;
@@ -20,7 +20,7 @@ import static org.springframework.beans.factory.config.BeanDefinition.ROLE_APPLI
 
 public class ApplicationContextInfoTest {
 
-    AnnotationConfigApplicationContext ac = new AnnotationConfigApplicationContext(ApplicationConfig.class);
+    AnnotationConfigApplicationContext ac = new AnnotationConfigApplicationContext(PureApplicationConfig.class);
 
     @Test
     @DisplayName("모든 빈 출력하기")
