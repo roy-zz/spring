@@ -2,10 +2,12 @@ package com.roy.spring.service.impl;
 
 import com.roy.spring.domain.Member;
 import com.roy.spring.service.DiscountPolicy;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import static com.roy.spring.enums.Grade.VIP;
 
+@Primary
 @Component
 public class RatioDiscountPolicy implements DiscountPolicy {
 
