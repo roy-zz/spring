@@ -2,6 +2,7 @@ package com.roy.spring.service.impl;
 
 import com.roy.spring.configuration.PureApplicationConfig;
 import com.roy.spring.configuration.SpringApplicationConfig;
+import com.roy.spring.repository.MemberRepository;
 import com.roy.spring.service.MemberService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -52,6 +53,31 @@ public class SingletonTest {
         statefulService2.order("Perry", 20000);
 
         assertEquals(10000, statefulService1.getPrice());
+    }
+
+    @Test
+    @DisplayName("@Configuration 싱글톤 검증 테스트")
+    void configurationSingletonValidateTest() {
+        ApplicationContext ac = new AnnotationConfigApplicationContext(SpringApplicationConfig.class);
+
+        MemberServiceImpl memberService = ac.getBean("memberService", MemberServiceImpl.class);
+        OrderServiceImpl orderService = ac.getBean("orderService", OrderServiceImpl.class);
+        MemberRepository memberRepository = ac.getBean("memberRepository", MemberRepository.class);
+
+        System.out.println("memberService.getMemberRepository = " + memberService.getMemberRepository());
+        System.out.println("orderService.getMemberRepository = " + orderService.getMemberRepository());
+        System.out.println("memberRepository = " + memberRepository);
+
+        assertEquals(memberService.getMemberRepository(), memberRepository);
+        assertEquals(orderService.getMemberRepository(), memberRepository);
+    }
+
+    @Test
+    @DisplayName("SpringApplicationConfig 객체 확인 테스트")
+    void configurationClassInstanceCheckTest() {
+        ApplicationContext ac = new AnnotationConfigApplicationContext(SpringApplicationConfig.class);
+        SpringApplicationConfig configBean = ac.getBean(SpringApplicationConfig.class);
+        System.out.println("configBean = " + configBean);
     }
 
 }
