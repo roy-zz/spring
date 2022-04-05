@@ -11,7 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.support.GenericXmlApplicationContext;
 
 import java.util.Map;
 
@@ -138,6 +140,35 @@ public class ApplicationContextInfoTest {
         Map<String, Object> beansOfType = hasDuplicatedTypeBeansAc.getBeansOfType(Object.class);
         for (String key : beansOfType.keySet()) {
             System.out.println("key: " + key + ", value: " + beansOfType.get(key));
+        }
+    }
+
+    ApplicationContext xmlAc = new GenericXmlApplicationContext("applicationConfig.xml");
+
+    @Test
+    @DisplayName("XML 빈 등록 테스트")
+    void findViaXmlApplicationContext() {
+        MemberService memberService = xmlAc.getBean("memberService", MemberService.class);
+        assertTrue(memberService instanceof MemberServiceImpl);
+    }
+    
+    @Test
+    @DisplayName("BeanDefinition 메타정보 조회 테스트")
+    void getBeanDefinitionMetaInfo() {
+        String[] beanDefinitionNames = ac.getBeanDefinitionNames();
+        for (String beanDefinitionName : beanDefinitionNames) {
+            BeanDefinition beanDefinition = ac.getBeanDefinition(beanDefinitionName);
+            if (beanDefinition.getRole() == ROLE_APPLICATION) {
+                System.out.println("beanDefinition.getBeanClassName() = " + beanDefinition.getBeanClassName());
+                System.out.println("beanDefinition.getFactoryBeanName() = " + beanDefinition.getFactoryBeanName());
+                System.out.println("beanDefinition.getFactoryMethodName() = " + beanDefinition.getFactoryMethodName());
+                System.out.println("beanDefinition.getScope() = " + beanDefinition.getScope());
+                System.out.println("beanDefinition.isLazyInit() = " + beanDefinition.isLazyInit());
+                System.out.println("beanDefinition.getInitMethodName() = " + beanDefinition.getInitMethodName());
+                System.out.println("beanDefinition.getDestroyMethodName() = " + beanDefinition.getDestroyMethodName());
+                System.out.println("beanDefinition.getConstructorArgumentValues() = " + beanDefinition.getConstructorArgumentValues());
+                System.out.println("beanDefinition.getPropertyValues() = " + beanDefinition.getPropertyValues());
+            }
         }
     }
 
