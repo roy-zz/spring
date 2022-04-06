@@ -193,11 +193,165 @@ UserB는 PrototypeBean은 호출할 때마다 새로 생성되기 때문에 coun
 
 UserB의 예상이 맞는지 테스트 코드를 작성하여 확인해본다.
 
+```java
+public class BeanScopeTest {
+    @Test
+    @DisplayName("싱글톤타입 & 프로토타입 동시 사용 테스트")
+    void singletonAndPrototypeTest() {
+        AnnotationConfigApplicationContext ac =
+                new AnnotationConfigApplicationContext(SingletonBean.class, PrototypeBean.class);
 
+        SingletonBean sb1 = ac.getBean(SingletonBean.class);
+        int countForUser1 = sb1.calculatePrototypeCount();
+        assertEquals(1, countForUser1);
 
+        SingletonBean sb2 = ac.getBean(SingletonBean.class);
+        int countForUser2 = sb2.calculatePrototypeCount();
+        assertEquals(1, countForUser2);
+    }
 
+    @Scope("prototype")
+    static class PrototypeBean {
+        private int count = 0;
+        public void addCount() {
+            count++;
+        }
+        public int getCount() {
+            return count;
+        }
+        @PostConstruct
+        public void init() {
+            System.out.println("Initialized Prototype");
+        }
+        @PreDestroy
+        public void destroy() {
+            System.out.println("Destroy Prototype");
+        }
+    }
 
+    @Scope("singleton")
+    static class SingletonBean {
+        private final PrototypeBean prototypeBean;
+        public SingletonBean(PrototypeBean prototypeBean) {
+            this.prototypeBean = prototypeBean;
+        }
+        public int calculatePrototypeCount() {
+            prototypeBean.addCount();;
+            return prototypeBean.getCount();
+        }
+    }
+}
+```
 
+UserA가 호출하였을 때의 count값과 UserB가 호출하였을 때의 값 모두 1이라고 예상하였지만 테스트는 깔끔하게 실패한다.
+SingletonBean은 싱글톤 객체로서 고객의 요청이 몇 번이 오더라도 단 하나의 객체로 모든 요청을 처리한다.
+이때 SingletonBean이 참조하고 있는 PrototypeBean은 SingletonBean이 생성되는 시점에 주입받은 빈이며 불변객체다.
+final 키워드가 붙었기 때문에 당연한 부분이지만 늘 그렇듯 **현업에서 바쁘게 개발하다보면 충분히 실수할 수 있는 부분**이다.
+
+그렇다면 우리가 원하는 것처럼 PrototypeBean이 호출될 때마다 바뀌게 하려면 어떻게 하는지 알아보도록 한다.
+
+---
+
+### Provider
+
+싱글톤타입 빈과 프로토타입 빈을 함께 사용하는 상황에서 항상 새로운 프로토타입 빈을 생성하는 방법은 무엇이 있는지 알아본다.
+지금부터 해야하는 작업은 싱글톤타입 빈이 자신이 필요한 시점에 새로운 프로토타입 빈을 직접 찾는 DL(Dependency Lookup)의존관계를 만들어볼 것이다.
+
+#### ObjectFactory, ObjectProvider
+
+지정한 빈을 컨테이너에서 대신 찾아주는 DL 역할을 하는 것이 ObjectProvider다.
+ObjectProvider 이전에 ObjectFactory가 있었지만 최근에는 편의 기능이 추가된 ObjectProvider를 사용하는 추세다.
+
+사용법은 아래와 같다.
+
+```java
+public class BeanScopeTest {
+    @Test
+    @DisplayName("싱글톤타입 & 프로토타입 동시 사용 테스트")
+    void singletonAndPrototypeTest() {
+        AnnotationConfigApplicationContext ac =
+                new AnnotationConfigApplicationContext(SingletonBean.class, PrototypeBean.class);
+
+        SingletonBean sb1 = ac.getBean(SingletonBean.class);
+        int countForUser1 = sb1.calculatePrototypeCount();
+        assertEquals(1, countForUser1);
+
+        SingletonBean sb2 = ac.getBean(SingletonBean.class);
+        int countForUser2 = sb2.calculatePrototypeCount();
+        assertEquals(1, countForUser2);
+    }
+
+    @Scope("singleton")
+    static class SingletonBean {
+        private final ObjectProvider<PrototypeBean> prototypeBeanProvider;
+        public SingletonBean(ObjectProvider<PrototypeBean> prototypeBeanProvider) {
+            this.prototypeBeanProvider = prototypeBeanProvider;
+        }
+        public int calculatePrototypeCount() {
+            PrototypeBean prototypeBean = prototypeBeanProvider.getObject();
+            prototypeBean.addCount();;
+            return prototypeBean.getCount();
+        }
+    }
+}
+```
+
+테스트는 성공할 것이고 calculatePrototypeCount()가 호출될 때마다 새로운 PrototypeBean을 제공받는다.
+
+---
+
+#### JSR-330 Provider
+
+자바 표준인 javax.inject.Provider를 사용해도 같은 효과를 얻을 수 있다.
+build.gradle에 javax.inject:javax.inject:1을 추가하여 필요한 라이브러리를 가져온다.
+
+Provider 인터페이스를 살펴보면 get()이라는 단 하나의 메서드만 존재한다.
+
+```java
+public interface Provider<T> {
+    T get();
+}
+```
+
+javax의 Provider를 사용하는 방법은 아래와 같다.
+
+```java
+public class BeanScopeTest {
+    @Test
+    @DisplayName("싱글톤타입 & 프로토타입 동시 사용 테스트")
+    void singletonAndPrototypeTest() {
+        AnnotationConfigApplicationContext ac =
+                new AnnotationConfigApplicationContext(SingletonBean.class, PrototypeBean.class);
+
+        SingletonBean sb1 = ac.getBean(SingletonBean.class);
+        int countForUser1 = sb1.calculatePrototypeCount();
+        assertEquals(1, countForUser1);
+
+        SingletonBean sb2 = ac.getBean(SingletonBean.class);
+        int countForUser2 = sb2.calculatePrototypeCount();
+        assertEquals(1, countForUser2);
+    }
+    
+    @Scope("singleton")
+    static class SingletonBean {
+        private final Provider<PrototypeBean> provider;
+        public SingletonBean(Provider<PrototypeBean> provider) {
+            this.provider = provider;
+        }
+        public int calculatePrototypeCount() {
+            PrototypeBean prototypeBean = provider.get();
+            prototypeBean.addCount();;
+            return prototypeBean.getCount();
+        }
+    }
+}
+```
+
+ObjectProvider와 동일한 역할을 하는 객체를 사용했으므로 테스트는 당연히 성공한다.
+
+필자가 참고한 강의에서는 Spring이외의 프레임워크를 사용할 가능성이 있다면 javax의 Provider를 사용하고 그렇지 않다면 Spring의 ObjectProvider를 사용하는 것이 좋다고 한다.
+필자의 경우도 이런 특수한 경우를 위해 build.gradle에 한 줄이 추가되는 것이 부담스러운 부분이 있다.
+심지어 Spring에 동일한 역할을 해주는 ObjectProvider가 있기 때문에 굳이 javax의 Provider는 사용할 일이 없지 않을까 싶다.
 
 ---
 

@@ -1,16 +1,16 @@
 package com.roy.spring.service.impl;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Scope;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.inject.Provider;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class BeanScopeTest {
 
@@ -43,6 +43,21 @@ public class BeanScopeTest {
         assertEquals(1, pb2.getCount());
     }
 
+    @Test
+    @DisplayName("싱글톤타입 & 프로토타입 동시 사용 테스트")
+    void singletonAndPrototypeTest() {
+        AnnotationConfigApplicationContext ac =
+                new AnnotationConfigApplicationContext(SingletonBean.class, PrototypeBean.class);
+
+        SingletonBean sb1 = ac.getBean(SingletonBean.class);
+        int countForUser1 = sb1.calculatePrototypeCount();
+        assertEquals(1, countForUser1);
+
+        SingletonBean sb2 = ac.getBean(SingletonBean.class);
+        int countForUser2 = sb2.calculatePrototypeCount();
+        assertEquals(1, countForUser2);
+    }
+
     @Scope("prototype")
     static class PrototypeBean {
         private int count = 0;
@@ -64,11 +79,12 @@ public class BeanScopeTest {
 
     @Scope("singleton")
     static class SingletonBean {
-        private final PrototypeBean prototypeBean;
-        public SingletonBean(PrototypeBean prototypeBean) {
-            this.prototypeBean = prototypeBean;
+        private final Provider<PrototypeBean> provider;
+        public SingletonBean(Provider<PrototypeBean> provider) {
+            this.provider = provider;
         }
         public int calculatePrototypeCount() {
+            PrototypeBean prototypeBean = provider.get();
             prototypeBean.addCount();;
             return prototypeBean.getCount();
         }
