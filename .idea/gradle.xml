@@ -15,6 +15,9 @@
             <option value="$PROJECT_DIR$/advanced" />
             <option value="$PROJECT_DIR$/base" />
             <option value="$PROJECT_DIR$/basic" />
+            <option value="$PROJECT_DIR$/lecture-advanced" />
+            <option value="$PROJECT_DIR$/lecture-aop" />
+            <option value="$PROJECT_DIR$/lecture-proxy" />
           </set>
         </option>
       </GradleProjectSettings>

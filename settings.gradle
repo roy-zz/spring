@@ -2,3 +2,7 @@ rootProject.name = "spring"
 include("base")
 include("basic")
 include("advanced")
+
+include("lecture-advanced")
+include("lecture-aop")
+include("lecture-proxy")
