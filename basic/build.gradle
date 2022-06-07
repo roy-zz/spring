@@ -1,0 +1,9 @@
+dependencies {
+    implementation(project(":base"))
+
+    implementation("javax.inject:javax.inject:1")
+
+    annotationProcessor("org.projectlombok:lombok")
+
+    testImplementation("org.springframework.boot:spring-boot-starter-test")
+}

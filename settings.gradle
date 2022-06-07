@@ -1,1 +1,4 @@
-rootProject.name = 'spring'
+rootProject.name = "spring"
+include("base")
+include("basic")
+include("advanced")
