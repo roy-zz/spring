@@ -38,7 +38,7 @@
 ```java
 @RestController
 @RequiredArgsConstructor
-public class OrderControllerVersion0 {
+public class OrderController {
     private final OrderService orderService;
     @GetMapping("/v0/request")
     public String request(String itemId) {
