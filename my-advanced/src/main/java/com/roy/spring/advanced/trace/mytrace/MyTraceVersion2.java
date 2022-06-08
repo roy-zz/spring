@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
-public class TraceVersion1 {
+public class MyTraceVersion2 {
 
     private static final String START_PREFIX = "-->";
     private static final String COMPLETE_PREFIX = "<--";
@@ -21,6 +21,13 @@ public class TraceVersion1 {
         return new TraceStatus(traceId, startTimeMillis, message);
     }
 
+    public TraceStatus beginSync(TraceId beforeTraceId, String message) {
+        TraceId nextId = beforeTraceId.createNextId();
+        long startTimeMillis = System.currentTimeMillis();
+        log.info("[{}] {} {}", nextId.getId(), addSpace(START_PREFIX, nextId.getLevel()), message);
+        return new TraceStatus(nextId, startTimeMillis, message);
+    }
+
     public void end(TraceStatus status) {
         complete(status, null);
     }
@@ -30,23 +37,22 @@ public class TraceVersion1 {
     }
 
     private void complete(TraceStatus status, Exception exception) {
-        Long stopTimeMillis = System.currentTimeMillis();
+        long stopTimeMillis = System.currentTimeMillis();
         long resultTimeMillis = stopTimeMillis - status.getStartTimeMillis();
         TraceId traceId = status.getTraceId();
-
         if (Objects.isNull(exception)) {
-            log.info("[{}] {} {} time = {} ms", traceId, addSpace(COMPLETE_PREFIX, traceId.getLevel()), status.getMessage(), resultTimeMillis);
+            log.info("[{}] {} {} time = {} ms", traceId.getId(), addSpace(COMPLETE_PREFIX, traceId.getLevel()), status.getMessage(), resultTimeMillis);
         } else {
-            log.info("[{}] {} {} time = {} ms ex = {}", traceId, addSpace(EXCEPTION_PREFIX, traceId.getLevel()), status.getMessage(), resultTimeMillis, exception.toString());
+            log.info("[{}] {} {} time = {} ms, exception = {}", traceId.getId(), addSpace(EXCEPTION_PREFIX, traceId.getLevel()), status.getMessage(), resultTimeMillis, exception.toString());
         }
     }
 
     private static String addSpace(String prefix, int level) {
-        StringBuilder stringBuilder = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < level; i++) {
-            stringBuilder.append((i == level - 1) ? "|" + prefix : "|   ");
+            sb.append( (i == level - 1) ? "|" + prefix : "|   ");
         }
-        return stringBuilder.toString();
+        return sb.toString();
     }
 
 }

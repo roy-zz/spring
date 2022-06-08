@@ -1,7 +1,7 @@
 package com.roy.spring.advanced.application.version1;
 
 import com.roy.spring.advanced.trace.TraceStatus;
-import com.roy.spring.advanced.trace.mytrace.TraceVersion1;
+import com.roy.spring.advanced.trace.mytrace.MyTraceVersion1;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrderControllerVersion1 {
 
     private final OrderServiceVersion1 orderService;
-    private final TraceVersion1 trace;
+    private final MyTraceVersion1 trace;
 
     @GetMapping("/v1/request")
     public String request(String itemId) {

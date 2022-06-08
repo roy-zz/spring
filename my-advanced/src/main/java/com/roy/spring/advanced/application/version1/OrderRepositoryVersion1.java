@@ -1,7 +1,7 @@
 package com.roy.spring.advanced.application.version1;
 
 import com.roy.spring.advanced.trace.TraceStatus;
-import com.roy.spring.advanced.trace.mytrace.TraceVersion1;
+import com.roy.spring.advanced.trace.mytrace.MyTraceVersion1;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 public class OrderRepositoryVersion1 {
 
-    private final TraceVersion1 trace;
+    private final MyTraceVersion1 trace;
 
     public void save(String itemId) {
         TraceStatus status = null;
