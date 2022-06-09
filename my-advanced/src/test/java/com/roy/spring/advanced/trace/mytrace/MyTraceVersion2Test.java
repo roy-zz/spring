@@ -1,6 +1,6 @@
-package com.roy.spring.advanced.trace;
+package com.roy.spring.advanced.trace.mytrace;
 
-import com.roy.spring.advanced.trace.mytrace.MyTraceVersion2;
+import com.roy.spring.advanced.trace.TraceStatus;
 import org.junit.jupiter.api.Test;
 
 public class MyTraceVersion2Test {
