@@ -101,14 +101,138 @@ public class ContextVersion1Test {
 
 ![](image/strategy-pattern-call-process.png)
 
----
+#### 전략 패턴과 익명 클래스 & 람다 표현식
 
+전략 패턴을 구현할 때 전략을 위한 클래스 파일을 만드는 것이 아니라 익명 클래스 및 람다 표현식을 사용할 수 있다.
 
+```java
+@Test
+void strategyAndAnonymousClazz() {
+    StrategyLogic strategyLogic1 = new StrategyLogic() {
+        @Override
+        public void call() {
+            log.info("==== 서비스 로직 1 시작");
+            log.info("==== 서비스 로직 1 작업");
+            log.info("==== 서비스 로직 1 종료");
+        }
+    };
+    ContextVersion1 context1 = new ContextVersion1(strategyLogic1);
+    context1.execute();
 
+    StrategyLogic strategyLogic2 = new StrategyLogic() {
+        @Override
+        public void call() {
+            log.info("==== 서비스 로직 2 시작");
+            log.info("==== 서비스 로직 2 작업");
+            log.info("==== 서비스 로직 2 종료");
+        }
+    };
+    ContextVersion1 context2 = new ContextVersion1(strategyLogic2);
+    context2.execute();
+}
 
+@Test
+void strategyAndLambdaExpression() {
+    ContextVersion1 context1 = new ContextVersion1(() -> {
+        log.info("==== 서비스 로직 1 시작");
+        log.info("==== 서비스 로직 1 작업");
+        log.info("==== 서비스 로직 1 종료");
+    });
+    ContextVersion1 context2 = new ContextVersion1(() -> {
+        log.info("==== 서비스 로직 2 시작");
+        log.info("==== 서비스 로직 2 작업");
+        log.info("==== 서비스 로직 2 종료");
+    });
+    context1.execute();
+    context2.execute();
+}
+```
 
+람다 표현식을 사용하기 위해서는 자바8 이상의 버전을 사용해야 하며 구현하려는 인터페이스에 메서드가 하나만 있어야 한다.  
+  
+전략 패턴은 변하지 않는 부로직을 `Context`에 두고 자주 변하는 주로직을 `Strategy`를 구현하고 `Context` 내부 필드에 `Strategy`를 주입해서 사용한다.  
+우리가 구현한 코드를 살펴보면 `Context`와 `Strategy`를 조립하고 `Context`를 실행시키기만 하면 된다. 우리가 생성자를 통해서 스프링 컨테이너에게 의존성을 주입받는 방식과 같은 방식이다.  
+스프링 빈의 경우 한 번 의존성이 주입되면 이후부터는 변경되는 일이 적지만 전략 패턴에서 전략은 필요에 따라 변경되어야 할 수도 있다.  
+  
+#### 전략 패턴과 파라미터 전달
 
+컴파일 시점이 아니라 동적으로 `Strategy`을 변경하기 위해서 `Strategy`를 `Context`의 파라미터로 전달하는 방법을 알아본다.  
 
+**Context**
+
+```java
+@Slf4j
+@AllArgsConstructor
+public class ContextVersion2 {
+    public void execute(StrategyLogic strategyLogic) {
+        long startTime = System.currentTimeMillis();
+        strategyLogic.call();
+        long endTime = System.currentTimeMillis();
+        log.info("spent = {}", endTime - startTime);
+    }
+}
+```
+
+**사용**
+
+```java
+@Slf4j
+public class ContextVersion2Test {
+    @Test
+    void strategyVersion2Test() {
+        ContextVersion2 context = new ContextVersion2();
+        context.execute(new StrategyLogic1());
+        context.execute(new StrategyLogic2());
+    }
+}
+```
+
+전략 패턴을 파라미터로 구현하면 아래와 같은 흐름으로 호출이 진행된다.
+
+![](image/strategy-pattern-via-parameter.png)
+  
+전략을 파라미터로 전달하더라도 `익명 클래스`와 `람다 표현식`을 사용할 수 있다.
+
+```java
+@Test
+void strategyAnonymousTest() {
+    ContextVersion2 context = new ContextVersion2();
+    context.execute(new StrategyLogic() {
+        @Override
+        public void call() {
+            log.info("==== 서비스 로직 1 시작");
+            log.info("==== 서비스 로직 1 작업");
+            log.info("==== 서비스 로직 1 종료");
+        }
+    });
+    context.execute(new StrategyLogic() {
+        @Override
+        public void call() {
+            log.info("==== 서비스 로직 2 시작");
+            log.info("==== 서비스 로직 2 작업");
+            log.info("==== 서비스 로직 2 종료");
+        }
+    });
+}
+
+@Test
+void strategyLambdaExpression() {
+    ContextVersion2 context = new ContextVersion2();
+    context.execute(() -> {
+        log.info("==== 서비스 로직 1 시작");
+        log.info("==== 서비스 로직 1 작업");
+        log.info("==== 서비스 로직 1 종료");
+    });
+    context.execute(() -> {
+        log.info("==== 서비스 로직 2 시작");
+        log.info("==== 서비스 로직 2 작업");
+        log.info("==== 서비스 로직 2 종료");
+    });
+}
+```
+
+`Context` 생성 시점에 `Strategy`을 조립하는 방식과 파라미터로 `Strategy`을 전달하는 방식 중 어떤 방식이 더 좋다고 말할 수는 없다.  
+필요에 따라서 구현 방식을 선택해서 사용하면 된다.
 
 ---
 
