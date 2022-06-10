@@ -3,6 +3,7 @@ include("base")
 include("basic")
 
 include("my-advanced")
+include("my-proxy")
 
 include("lecture-advanced")
 include("lecture-aop")

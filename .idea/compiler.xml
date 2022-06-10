@@ -11,9 +11,11 @@
         <module name="spring.lecture-proxy.main" />
         <module name="spring.my-advanced.test" />
         <module name="spring.lecture-advanced.test" />
+        <module name="spring.my-proxy.test" />
         <module name="spring.lecture-aop.main" />
         <module name="spring.lecture-proxy.test" />
         <module name="spring.my-advanced.main" />
+        <module name="spring.my-proxy.main" />
         <module name="spring.lecture-advanced.main" />
         <module name="spring.basic.main" />
         <module name="spring.lecture-aop.test" />
