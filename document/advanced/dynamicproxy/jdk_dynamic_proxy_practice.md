@@ -145,28 +145,46 @@ JdkDynamicProxyTest - Proxy class = class com.sun.proxy.$Proxy10
 
 ---
 
+### 정리
 
+출력된 결과를 보면 타겟 클래스는 `RoyImpl`이고 프록시 클래스는 `com.sun.proxy.$Proxy9`인 것을 확인할 수 있다.  
+실제로 사용되는 객체는 우리가 작성한 클래스의 객체가 아니라 동적으로 생성된 프록시이며 이름 또한 런타임에 동적으로 생성된 이름이다.  
+이때 생성된 동적 프록시는 `TimeInvocationHandler` 클래스의 `invoke` 메서드 내부의 로직을 실행한다.
+  
+JDK 동적 프록시가 적용되고 나서 객체의 의존 관계는 아래와 같다.
 
+![](image/after-dynamic-proxy-instance-relation.png)
 
+클라이언트는 `Proxy.newProxyInstance(...)` 메서드로 생성된 동적 프록시의 `call(...)` 메서드를 호출한다.  
+동적 프록시는 `TimeInvocationHandler`의 `invoke(...)`를 호출하여 개발자가 작성한 프록시 내부의 코드를 실행한다.  
+프록시의 역할이 완료되면 프록시의 타겟이며 실제 객체인 `RoyImpl`의 `call(...)` 메서드를 호출한다.  
+`RoyImpl.call(...)`의 작업이 완료되면 프록시는 수행된 시간을 측정하여 로그에 출력한다.
+  
+테스트 코드에서 출력된 결과를 보면 우리는 프록시 클래스를 만든 적이 없지만 동적으로 `$Proxy9`, `$Proxy10` 객체가 생성된 것을 확인할 수 있다.  
+두 객체는 공통으로 `TimeInvocationHandler`를 사용했다. JDK 동적 프록시를 적용하면서 적용 대상 만큼 프록시 클래스를 생성하는 작업을 하지 않아도 되며 같은 기능을 하는 로직을 한번만 개발해서 필요한 곳에 공통으로 적용할 수 있게 되었다.  
+  
+#### JDK 동적 프록시 적용 전 vs 후
 
+JDK 동적 프록시를 적용하기 전에는 우리가 직접 인터페이스를 구현하는 프록시 클래스를 생성해야 했다.
 
+![](image/before-dynamic-proxy-class-relation.png)
 
+JDK 동적 프록시를 적용하고 나서는 더 이상 개발자가 직접 프록시 클래스를 작성하지 않아도 된다.
 
+![](image/after-dynamic-proxy-class-relation.png)
+  
+JDK 동적 프록시를 적용하기 전의 객체 의존 관계는 아래와 같으며 클라이언트는 우리가 만든 프록시 클래스의 객체를 호출한다.
 
+![](image/before-dynamic-proxy-class-relation.png)
+  
+JDK 동적 프록시가 적용된 후에는 클라이언트 객체가 동적으로 생성된 프록시 객체를 의존하게 된다.
 
+![](image/after-dynamic-proxy-instance-relation.png)
 
+---
 
-
-
-
-
-
-
-
-
-
-
-
+이번 장에서는 `JDK 동적 프록시`를 테스트 코드로 작성해보았다.  
+다음 장에서는 실제 서비스 코드에 `JDK 동적 프록시`를 적용하는 방법에 대해서 알아본다. 
 
 ---
 
