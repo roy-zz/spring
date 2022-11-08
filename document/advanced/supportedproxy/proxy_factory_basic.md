@@ -3,7 +3,7 @@
 모든 코드는 [깃허브(링크)](https://github.com/roy-zz/spring) 에 올려두었다.
 ---
 
-### Proxy Factory
+### Proxy Factory Basics
 
 동적 프록시를 사용하는 경우 아래와 같은 의문이 생길 수 있다.
 
