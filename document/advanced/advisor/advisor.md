@@ -77,6 +77,130 @@ TimeProxy 종료 resultTime = 0ms
 
 ---
 
+### 다중 어드바이저
+
+어드바이저는 하나의 포인트컷과 하나의 어드바이스를 가지고 있다.  
+
+#### 다중 프록시를 통한 다중 어드바이저
+
+여러 개의 프록시를 생성하여 하나의 `target`에 여러 개의 어드바이저를 적용해본다.
+
+**MultiAdvisorTest**
+```java
+public class MultiAdvisorTest {
+
+    @Test
+    @DisplayName("여러 개의 프록시를 통한 다중 어드바이저")
+    void multiAdvisorTestOne() {
+
+        // Process
+        // client -> proxy two(advisor two) -> proxy one(advisor one) -> target
+
+        // 프록시 One 생성
+        ServiceInterface target = new ServiceImpl();
+        ProxyFactory proxyFactoryOne = new ProxyFactory(target);
+        DefaultPointcutAdvisor advisorOne = new DefaultPointcutAdvisor(Pointcut.TRUE, new AdviceOne());
+        proxyFactoryOne.addAdvisor(advisorOne);
+        ServiceInterface proxyOne = (ServiceInterface) proxyFactoryOne.getProxy();
+
+        // 프록시 Two 생성, target -> proxy one 입력
+        ProxyFactory proxyFactoryTwo = new ProxyFactory(proxyOne);
+        DefaultPointcutAdvisor advisorTwo = new DefaultPointcutAdvisor(Pointcut.TRUE, new AdviceTwo());
+        proxyFactoryTwo.addAdvisor(advisorTwo);
+        ServiceInterface proxyTwo = (ServiceInterface) proxyFactoryTwo.getProxy();
+
+        proxyTwo.save();
+    }
+
+
+    @Slf4j
+    static class AdviceOne implements MethodInterceptor {
+
+        @Override
+        public Object invoke(MethodInvocation invocation) throws Throwable {
+            log.info("advice one 호출");
+            return invocation.proceed();
+        }
+    }
+
+    @Slf4j
+    static class AdviceTwo implements MethodInterceptor {
+
+        @Override
+        public Object invoke(MethodInvocation invocation) throws Throwable {
+            log.info("advice two 호출");
+            return invocation.proceed();
+        }
+    }
+}
+```
+
+테스트 코드를 실행하면 아래와 같은 순서로 동작한다.
+
+![](image/multi-advisor.png)
+
+테스트 코드를 실행하고 출력된 결과는 아래와 같으며, 포인트컷은 `adviceOne`, `adviceTwo`에 항상 `true`를 반환하도록 설정했기 때문에 모두 어드바이스가 적용된 것을 확인할 수 있다.
+
+```shell
+advice two 호출
+advice one 호출
+Call save()
+```
+
+하지만 이렇게 여러 개의 프록시를 생성하는 방법은 필요한 어드바이저의 수만큼 프록시를 생성해야 한다는 단점이 있다.
+
+---
+
+#### 하나의 프록시를 통한 다중 어드바이저
+
+스프링은 다중 어드바이저를 사용하기 위해 다중 프록시가 필요한 문제를 해결하기 위한 방법을 제공하고 있다.  
+프록시 팩토리를 통해서 하나의 프록시에 여러 개의 어드바이저를 적용할 수 있다.
+
+![](image/oneproxy-multiadvisor.png)
+
+```java
+public class MultiAdvisorTest {
+    // ...
+    @Test
+    @DisplayName("하나의 프록시를 통한 다중 어드바이저")
+    void multiAdvisorTestTwo() {
+
+        // Process
+        // proxy -> advisorTwo -> advisorOne -> target
+
+        DefaultPointcutAdvisor advisorOne = new DefaultPointcutAdvisor(Pointcut.TRUE, new AdviceOne());
+        DefaultPointcutAdvisor advisorTwo = new DefaultPointcutAdvisor(Pointcut.TRUE, new AdviceTwo());
+
+        ServiceInterface target = new ServiceImpl();
+        ProxyFactory proxyFactory = new ProxyFactory(target);
+        proxyFactory.addAdvisor(advisorTwo);
+        proxyFactory.addAdvisor(advisorOne);
+        ServiceInterface proxy = (ServiceInterface) proxyFactory.getProxy();
+
+        proxy.save();
+    }
+    // ...
+}
+```
+
+- 프록시 팩토리에 `addAdvisor()` 메서드를 통해서 원하는 만큼의 어드바이저를 등록할 수 있다.
+- 개발자가 등록하는 순서대로 `advisor`가 호출되고 예시에서는 `advisorTwo`, `advisorOne` 순서대로 호출된다.
+
+![](image/oneproxy-multiadvisor-process.png)
+
+테스트 코드를 실행하여 출력되는 결과는 아래와 같다.
+
+```shell
+advice two 호출
+advice one 호출
+Call save()
+```
+
+하나의 프록시에 여러 어드바이저를 적용하는 것이기 때문에 사용법도 편하고 성능면에서도 우수하다.  
+  
+스프링 AOP를 적용할 때 AOP 적용 수 만큼 프록시가 생성된다고 착각하는 개발자들이 많이 있다. 하지만 실제로 스프링은 AOP를 적용할 때, 최적화를 진행해서 위에서 살펴본 것과 같이 하나의 프록시에 여러 어드바이저를 적용한다.
+정리하면 하나의 `target`에 여러 AOP가 동시에 적용되어도, **스프링의 AOP는 `target`마다 하나의 프록시만 생성**한다는 점을 기억해야 한다.
+
 **참고한 자료**:
 
 - https://www.inflearn.com/course/%EC%8A%A4%ED%94%84%EB%A7%81-%ED%95%B5%EC%8B%AC-%EC%9B%90%EB%A6%AC-%EA%B3%A0%EA%B8%89%ED%8E%B8
