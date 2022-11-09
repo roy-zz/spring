@@ -1,6 +1,6 @@
 package com.roy.spring.myproxy;
 
-import com.roy.spring.myproxy.config.version4_postprocessor.BeanPostProcessorConfig;
+import com.roy.spring.myproxy.config.version5_autoproxy.AutoProxyConfig;
 import com.roy.spring.myproxy.trace.logtrace.LogTrace;
 import com.roy.spring.myproxy.trace.logtrace.ThreadLocalLogTrace;
 import org.springframework.boot.SpringApplication;
@@ -13,7 +13,8 @@ import org.springframework.context.annotation.Import;
 // @Import(ConcreteBasedProxyConfig.class)
 // @Import(DynamicProxyBasicConfig.class)
 // @Import(ProxyFactoryConfigVersion2.class)
-@Import(BeanPostProcessorConfig.class)
+// @Import(BeanPostProcessorConfig.class)
+@Import(AutoProxyConfig.class)
 @SpringBootApplication(scanBasePackages = "com.roy.spring.myproxy")
 public class MyProxyApplication {
 
