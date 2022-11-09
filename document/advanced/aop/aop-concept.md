@@ -1,4 +1,4 @@
-[이전 장(링크)]() 에서는 `@Aspect`에 대해서 알아보았다.  
+[이전 장(링크)](https://imprint.tistory.com/354) 에서는 `@Aspect`에 대해서 알아보았다.  
 이번 장에서는 **스프링 AOP란 무엇인지 개념**에 대해서 알아보도록 한다.  
 모든 코드는 [깃허브(링크)](https://github.com/roy-zz/spring) 에 올려두었다.
 ---
