@@ -4,6 +4,7 @@ include("basic")
 
 include("my-advanced")
 include("my-proxy")
+include("my-aop")
 
 include("lecture-advanced")
 include("lecture-aop")
