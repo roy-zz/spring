@@ -82,7 +82,7 @@ call external
 call internal
 ```
 
-![](image/aop-precaution-1.png)
+![](image/aop-problem-1.png)
   
 실행 결과를 보면 `callServiceVersion0.external()`을 실행할 때는 프록시를 호출한다. 따라서 `CallLogAspect` 어드바이스가 호출된 것을 확인할 수 있다.  
 AOP 프록시는 `target.external()`을 호출한다. 문제는 `callServiceVersion0.external()`안에서 `internal()`을 호출할 때 발생한다.  
@@ -99,7 +99,7 @@ aop = void com.roy.spring.myaop.internalcall.CallServiceVersion0.internal()
 call internal
 ```
 
-![](image/aop-precaution-2.png)
+![](image/aop-problem-2.png)
 
 외부에서 호출하는 경우는 프록시를 거치기 때문에 `internal()`도 `CallLogAspect` 어드바이스가 적용된 것을 확인할 수 있다.
 
@@ -155,7 +155,7 @@ aop = void com.roy.spring.myaop.internalcall.CallServiceVersion1.internal()
 call internal
 ```
 
-![](image/aop-precaution-3.png)
+![](image/aop-problem-3.png)
 
 실행 결과를 보면 `internal()`을 호출할 때 자기 자신의 인스턴스를 호출하는 것이 아니라 프록시 인스턴스를 통해서 호출하기 때문에 AOP가 잘 적용된다.
 
@@ -282,7 +282,7 @@ aop = void com.roy.spring.myaop.internalcall.InternalService.internal()
 call internal
 ```
 
-![](image/aop-precaution-4.png)
+![](image/aop-problem-4.png)
 
 내부 호출 자체가 사라지고, `callService` -> `internalService`를 호출하는 구조로 변경되었다. 덕분에 자연스럽게 AOP가 적용되었다.  
 이러한 구조 변경은 여러 방법으로 변경이 가능하다. 예를 들어, `external()`메서드가 `internal()` 메서드를 호출하는 것이 아니라 `클라이언트`가 `external()`과 `internal()`을 순차적으로 호출하도록 변경할 수도 있다.
