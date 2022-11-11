@@ -1,4 +1,4 @@
-[이전 장(링크)]() 에서는 `스프링 AOP의 포인트컷과 execution 지시자`에 대해서 알아보았다.  
+[이전 장(링크)](https://imprint.tistory.com/358) 에서는 `스프링 AOP의 포인트컷과 execution 지시자`에 대해서 알아보았다.  
 이번 장에서는 **within, args, @target, @within, @annotation, @args 지시자**에 대해서 알아보도록 한다.  
 모든 코드는 [깃허브(링크)](https://github.com/roy-zz/spring) 에 올려두었다.
 ---

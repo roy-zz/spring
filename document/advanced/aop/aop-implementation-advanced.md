@@ -1,4 +1,4 @@
-[이전 장(링크)]() 에서는 `스프링 AOP를 적용하는 기본적인 방법`에 대해서 알아보았다.  
+[이전 장(링크)](https://imprint.tistory.com/356) 에서는 `스프링 AOP를 적용하는 기본적인 방법`에 대해서 알아보았다.  
 이번 장에서는 **복잡한 상황에서 스프링 AOP를 적용하는 방법을**알아보도록 한다.  
 모든 코드는 [깃허브(링크)](https://github.com/roy-zz/spring) 에 올려두었다.
 ---
@@ -352,7 +352,7 @@ public void doBefore(JoinPoint joinPoint) {
 
 ---
 
-**`@AfterReturning**: 메서드 실행이 정상적으로 반환될 때 실행
+**@AfterReturning**: 메서드 실행이 정상적으로 반환될 때 실행
 ```java
 @AfterReturning(value = "com.roy.spring.myaop.order.aop.Pointcuts.orderAndService()", returning = "result")
 public void doAfterReturn(JoinPoint joinPoint, Object result) {

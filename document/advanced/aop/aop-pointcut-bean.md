@@ -1,4 +1,4 @@
-[이전 장(링크)]() 에서는 `within, args, @target, @within, @annotation, @args 지시자`에 대해서 알아보았다.  
+[이전 장(링크)](https://imprint.tistory.com/359) 에서는 `within, args, @target, @within, @annotation, @args 지시자`에 대해서 알아보았다.  
 이번 장에서는 **bean, this, target 지시자**에 대해서 알아보도록 한다.  
 모든 코드는 [깃허브(링크)](https://github.com/roy-zz/spring) 에 올려두었다.
 ---
@@ -200,7 +200,7 @@ target(com.roy.spring.myaop.member.MemberService)
 - `this(com.roy.spring.myaop.member.MemberService)`: 프록시 객체를 보고 판단한다. `this`는 부모 타입을 허용하기 때문에 AOP가 적용된다.
 - `target(com.roy.spring.myaop.member.MemberService)`: target 객체를 보고 판단한다. `target`은 부모 타입을 허용하기 때문에 AOP가 적용된다.
   
-*MemberServiceImpl 구체 클래스 지정**
+**MemberServiceImpl 구체 클래스 지정**
 - `this(com.roy.spring.myaop.member.MemberServiceImpl)`: 프록시 객체를 보고 판단한다. JDK 동적 프록시로 만들어진 프록시 객체는 `MemberService` 인터페이스를 기반으로 구현된 새로운 클래스다. 
   따라서 `MemberServiceImpl`를 전혀 알지 못하기 때문에 **AOP 적용 대상이 아니다.**
 - `target(com.roy.spring.myaop.member.MemberServiceImpl)`: target 객체를 보고 판단한다. target 객체가 `MemberServiceImpl` 타입이므로 AOP 적용 대상이다.
