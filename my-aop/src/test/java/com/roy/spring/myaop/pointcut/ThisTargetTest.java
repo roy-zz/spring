@@ -1,6 +1,6 @@
-package hello.aop.pointcut;
+package com.roy.spring.myaop.pointcut;
 
-import hello.aop.member.MemberService;
+import com.roy.spring.myaop.member.MemberService;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
@@ -10,56 +10,49 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 
-/**
- * application.properties
- * spring.aop.proxy-target-class=true  CGLIB
- * spring.aop.proxy-target-class=false JDK 동적 프록시
- */
 @Slf4j
 @Import(ThisTargetTest.ThisTargetAspect.class)
-//@SpringBootTest(properties = "spring.aop.proxy-target-class=false") //JDK 동적 프록시
-@SpringBootTest(properties = "spring.aop.proxy-target-class=true") //CGLIB
+// @SpringBootTest(properties = "spring.aop.proxy-target-class=false") // JDK 동적 프록시
+@SpringBootTest(properties = "spring.aop.proxy-target-class=true") // CGLIB
 public class ThisTargetTest {
 
     @Autowired
-    MemberService memberService;
-
+    private MemberService memberService;
 
     @Test
     void success() {
-        log.info("memberService Proxy={}", memberService.getClass());
-        memberService.hello("helloA");
+        log.info("memberService Proxy = {}", memberService.getClass());
+        memberService.hello("helloRoy");
     }
 
     @Slf4j
     @Aspect
     static class ThisTargetAspect {
 
-        //부모 타입 허용
-        @Around("this(hello.aop.member.MemberService)")
+        // 부모 타입 허용
+        @Around("this(com.roy.spring.myaop.member.MemberService)")
         public Object doThisInterface(ProceedingJoinPoint joinPoint) throws Throwable {
             log.info("[this-interface] {}", joinPoint.getSignature());
             return joinPoint.proceed();
         }
 
-        //부모 타입 허용
-        @Around("target(hello.aop.member.MemberService)")
+        // 부모 타입 허용
+        @Around("target(com.roy.spring.myaop.member.MemberService)")
         public Object doTargetInterface(ProceedingJoinPoint joinPoint) throws Throwable {
-            log.info("[target-interface] {}", joinPoint.getSignature());
+            log.info("[this-interface] {}", joinPoint.getSignature());
             return joinPoint.proceed();
         }
 
-        @Around("this(hello.aop.member.MemberServiceImpl)")
+        @Around("this(com.roy.spring.myaop.member.MemberServiceImpl)")
         public Object doThis(ProceedingJoinPoint joinPoint) throws Throwable {
             log.info("[this-impl] {}", joinPoint.getSignature());
             return joinPoint.proceed();
         }
 
-        @Around("target(hello.aop.member.MemberServiceImpl)")
+        @Around("target(com.roy.spring.myaop.member.MemberServiceImpl)")
         public Object doTarget(ProceedingJoinPoint joinPoint) throws Throwable {
-            log.info("[target-impl] {}", joinPoint.getSignature());
+            log.info("[this-impl] {}", joinPoint.getSignature());
             return joinPoint.proceed();
         }
     }
-
 }
